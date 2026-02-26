@@ -1,5 +1,5 @@
 // This example demonstrates instanced drawing with low-level rlgl bindings:
-//   - LoadVertexBufferElements: upload index data (EBO) to GPU
+//   - LoadVertexBufferElement: upload index data (EBO) to GPU
 //   - DrawVertexArrayElementsInstanced: instanced indexed draw
 //   - SetVertexAttributeDivisor: per-instance attribute advancement
 //   - Camera3D with BeginMode3D/EndMode3D for orbital 3D camera control
@@ -133,7 +133,7 @@ func main() {
 	rl.SetVertexAttributeDivisor(3, 1)
 
 	// Index buffer (EBO)
-	ebo := rl.LoadVertexBufferElements(quadIndices, false)
+	ebo := rl.LoadVertexBufferElement(quadIndices, false)
 	defer rl.UnloadVertexBuffer(ebo)
 
 	rl.DisableVertexArray()

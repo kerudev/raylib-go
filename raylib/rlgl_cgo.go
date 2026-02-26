@@ -631,8 +631,8 @@ func LoadVertexBuffer[T any](buffer []T, dynamic bool) uint32 {
 	return uint32(C.rlLoadVertexBuffer(cbuffer, csize, cdynamic))
 }
 
-// LoadVertexBufferElements - Load vertex buffer elements object
-func LoadVertexBufferElements[T any](buffer []T, dynamic bool) uint32 {
+// LoadVertexBufferElement - Load vertex buffer elements object
+func LoadVertexBufferElement[T any](buffer []T, dynamic bool) uint32 {
 	if len(buffer) == 0 {
 		return 0
 	}

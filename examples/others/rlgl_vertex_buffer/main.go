@@ -91,7 +91,7 @@ func main() {
 	rl.EnableVertexAttribute(3)
 
 	// Index buffer (EBO) (for indexed drawing of vertices)
-	quadIBO := rl.LoadVertexBufferElements(quadIndices, false)
+	quadIBO := rl.LoadVertexBufferElement(quadIndices, false)
 	defer rl.UnloadVertexBuffer(quadIBO)
 	rl.DisableVertexArray() // disable quadVAO that was enabled on creation.
 
@@ -152,7 +152,7 @@ func main() {
 
 	// Orthographic projection: screen-space coordinates, origin top-left
 	// NOTE: rl.MatrixMultiply(rl.GetMatrixModelview(), rl.GetMatrixProjection()) could be used to work with rl camera
-  // See examples/others/rlgl_instanced_quad/main.go
+	// See examples/others/rlgl_instanced_quad/main.go
 	mvpMatrix := rl.MatrixOrtho(0, screenWidth, screenHeight, 0, -1, 1)
 
 	// White diffuse color so vertex colors pass through unmodified
