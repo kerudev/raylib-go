@@ -77,7 +77,7 @@ func main() {
 		rl.ClearBackground(rl.RayWhite)
 
 		raygui.Label(rl.NewRectangle(20, 20, 200, 20), "Easing Type:")
-		comboActive = raygui.ComboBox(rl.NewRectangle(20, 40, 200, 20), strings.Join(easingTypes, ";"), comboActive)
+		raygui.ComboBox(rl.NewRectangle(20, 40, 200, 20), strings.Join(easingTypes, ";"), &comboActive)
 
 		raygui.Label(rl.NewRectangle(20, 80, 200, 20), "Press R to reset")
 

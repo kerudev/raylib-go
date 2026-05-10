@@ -69,33 +69,17 @@ func main() {
 
 		// Draw GUI controls
 		//------------------------------------------------------------------------------
-		startAngle = gui.Slider(rl.Rectangle{
-			X: 600, Y: 40, Width: 120, Height: 20,
-		}, "StartAngle", fmt.Sprintf("%.2f", startAngle), startAngle, -450, 450)
-		endAngle = gui.Slider(rl.Rectangle{
-			X: 600, Y: 70, Width: 120, Height: 20,
-		}, "EndAngle", fmt.Sprintf("%.2f", endAngle), endAngle, -450, 450)
+		gui.Slider(rl.NewRectangle(600, 40, 120, 20), "StartAngle", fmt.Sprintf("%.2f", startAngle), &startAngle, -450, 450)
+		gui.Slider(rl.NewRectangle(600, 70, 120, 20), "EndAngle", fmt.Sprintf("%.2f", endAngle), &endAngle, -450, 450)
 
-		innerRadius = gui.Slider(rl.Rectangle{
-			X: 600, Y: 140, Width: 120, Height: 20,
-		}, "InnerRadius", fmt.Sprintf("%.2f", innerRadius), innerRadius, 0, 100)
-		outerRadius = gui.Slider(rl.Rectangle{
-			X: 600, Y: 170, Width: 120, Height: 20,
-		}, "OuterRadius", fmt.Sprintf("%.2f", outerRadius), outerRadius, 0, 200)
+		gui.Slider(rl.NewRectangle(600, 140, 120, 20), "InnerRadius", fmt.Sprintf("%.2f", innerRadius), &innerRadius, 0, 100)
+		gui.Slider(rl.NewRectangle(600, 170, 120, 20), "OuterRadius", fmt.Sprintf("%.2f", outerRadius), &outerRadius, 0, 200)
 
-		segments = gui.Slider(rl.Rectangle{
-			X: 600, Y: 240, Width: 120, Height: 20,
-		}, "Segments", fmt.Sprintf("%.2f", segments), segments, 0, 100)
+		gui.Slider(rl.NewRectangle(600, 240, 120, 20), "Segments", fmt.Sprintf("%.2f", segments), &segments, 0, 100)
 
-		drawRing = gui.CheckBox(rl.Rectangle{
-			X: 600, Y: 320, Width: 20, Height: 20,
-		}, "Draw Ring", drawRing)
-		drawRingLines = gui.CheckBox(rl.Rectangle{
-			X: 600, Y: 350, Width: 20, Height: 20,
-		}, "Draw Ring Lines", drawRingLines)
-		drawSectorLines = gui.CheckBox(rl.Rectangle{
-			X: 600, Y: 380, Width: 20, Height: 20,
-		}, "Draw Sector Lines", drawSectorLines)
+		gui.CheckBox(rl.NewRectangle(600, 320, 20, 20), "Draw Ring", &drawRing)
+		gui.CheckBox(rl.NewRectangle(600, 350, 20, 20), "Draw Ring Lines", &drawRingLines)
+		gui.CheckBox(rl.NewRectangle(600, 380, 20, 20), "Draw Sector Lines", &drawSectorLines)
 
 		minSegments := ceil((endAngle - startAngle) / 90)
 		var color = rl.DarkGray

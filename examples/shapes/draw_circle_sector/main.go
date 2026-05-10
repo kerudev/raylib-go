@@ -51,19 +51,19 @@ func main() {
 		// Draw GUI controls
 		r := rl.Rectangle{X: 600, Y: 40, Width: 120, Height: 20}
 		msg := fmt.Sprintf("%.2f", startAngle)
-		startAngle = gui.Slider(r, "StartAngle", msg, startAngle, 0, 720)
+		gui.Slider(r, "StartAngle", msg, &startAngle, 0, 720)
 
 		r = rl.Rectangle{X: 600, Y: 70, Width: 120, Height: 20}
 		msg = fmt.Sprintf("%.2f", endAngle)
-		endAngle = gui.Slider(r, "EndAngle", msg, endAngle, 0, 720)
+		gui.Slider(r, "EndAngle", msg, &endAngle, 0, 720)
 
 		r = rl.Rectangle{X: 600, Y: 140, Width: 120, Height: 20}
 		msg = fmt.Sprintf("%.2f", outerRadius)
-		outerRadius = gui.Slider(r, "Radius", msg, outerRadius, 0, 200)
+		gui.Slider(r, "Radius", msg, &outerRadius, 0, 200)
 
 		r = rl.Rectangle{X: 600, Y: 170, Width: 120, Height: 20}
 		msg = fmt.Sprintf("%.2f", segments)
-		segments = gui.Slider(r, "Segments", msg, segments, 0, 100)
+		gui.Slider(r, "Segments", msg, &segments, 0, 100)
 
 		minSegments = calculateMinSegments(startAngle, endAngle)
 		text := "MODE: AUTO"
