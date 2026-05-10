@@ -28,7 +28,7 @@ func (p PropertyID) IsExtended() bool {
 }
 
 func (v PropertyValue) AsColor() rl.Color {
-	return rl.Color{uint8(v >> 24), uint8(v >> 16), uint8(v >> 8), uint8(v)}
+	return rl.Color{R: uint8(v >> 24), G: uint8(v >> 16), B: uint8(v >> 8), A: uint8(v)}
 }
 
 func NewColorPropertyValue(color rl.Color) PropertyValue {
@@ -571,11 +571,13 @@ func WindowBox(bounds rl.Rectangle, title string) bool {
 		ctitle = C.CString(title)
 		defer C.free(unsafe.Pointer(ctitle))
 	}
+
+	// NOTE: Returns the same as C.GuiButton
 	return C.GuiWindowBox(cbounds, ctitle) != 0
 }
 
 // Group Box control with text name
-func GroupBox(bounds rl.Rectangle, text string) {
+func GroupBox(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.height = C.float(bounds.Height)
 	cbounds.x = C.float(bounds.X)
@@ -586,11 +588,13 @@ func GroupBox(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiGroupBox(cbounds, ctext)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiGroupBox(cbounds, ctext) != 0
 }
 
 // Line control
-func Line(bounds rl.Rectangle, text string) {
+func Line(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -601,11 +605,13 @@ func Line(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiLine(cbounds, ctext)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiLine(cbounds, ctext) != 0
 }
 
 // Panel control
-func Panel(bounds rl.Rectangle, text string) {
+func Panel(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -616,7 +622,9 @@ func Panel(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiPanel(cbounds, ctext)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiPanel(cbounds, ctext) != 0
 }
 
 // Tab Bar control, returns the current TAB closing requested, -1 otherwise
@@ -643,7 +651,7 @@ func TabBar(bounds rl.Rectangle, text []string, active *int32) int32 {
 }
 
 // Scroll Panel control
-func ScrollPanel(bounds rl.Rectangle, text string, content rl.Rectangle, scroll *rl.Vector2, view *rl.Rectangle) {
+func ScrollPanel(bounds rl.Rectangle, text string, content rl.Rectangle, scroll *rl.Vector2, view *rl.Rectangle) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -678,11 +686,12 @@ func ScrollPanel(bounds rl.Rectangle, text string, content rl.Rectangle, scroll 
 		view.Height = float32(cview.height)
 	}()
 
-	C.GuiScrollPanel(cbounds, ctext, ccontent, &cscroll, &cview)
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiScrollPanel(cbounds, ctext, ccontent, &cscroll, &cview) != 0
 }
 
 // Label control
-func Label(bounds rl.Rectangle, text string) {
+func Label(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -693,7 +702,9 @@ func Label(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiLabel(cbounds, ctext)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiLabel(cbounds, ctext) != 0
 }
 
 // Button control, returns true when clicked
@@ -727,7 +738,7 @@ func LabelButton(bounds rl.Rectangle, text string) bool {
 }
 
 // Toggle control, returns true when active
-func Toggle(bounds rl.Rectangle, text string, active bool) bool {
+func Toggle(bounds rl.Rectangle, text string, active *bool) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -738,13 +749,21 @@ func Toggle(bounds rl.Rectangle, text string, active bool) bool {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cactive := C.bool(active)
-	C.GuiToggle(cbounds, ctext, &cactive)
-	return bool(cactive)
+
+	if active == nil {
+		active = new(bool)
+	}
+	cactive := C.bool(*active)
+	defer func() {
+		*active = bool(cactive)
+	}()
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiToggle(cbounds, ctext, &cactive) != 0
 }
 
 // ToggleGroup control, returns active toggle index
-func ToggleGroup(bounds rl.Rectangle, text string, active int32) int32 {
+func ToggleGroup(bounds rl.Rectangle, text string, active *int32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -755,30 +774,46 @@ func ToggleGroup(bounds rl.Rectangle, text string, active int32) int32 {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cactive := C.int(active)
-	C.GuiToggleGroup(cbounds, ctext, &cactive)
-	return int32(cactive)
+
+	if active == nil {
+		active = new(int32)
+	}
+	cactive := C.int(*active)
+	defer func() {
+		*active = int32(cactive)
+	}()
+
+	return C.GuiToggleGroup(cbounds, ctext, &cactive) != 0
 }
 
 // ToggleSlider control, returns true when clicked
-func ToggleSlider(bounds rl.Rectangle, text string, active int32) int32 {
+func ToggleSlider(bounds rl.Rectangle, text string, active *int32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
+
 	var ctext *C.char
 	if len(text) > 0 {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cactive := C.int(active)
-	C.GuiToggleSlider(cbounds, ctext, &cactive)
-	return int32(cactive)
+
+	if active == nil {
+		active = new(int32)
+	}
+
+	cactive := C.int(*active)
+	defer func() {
+		*active = int32(cactive)
+	}()
+
+	return C.GuiToggleSlider(cbounds, ctext, &cactive) != 0
 }
 
 // CheckBox control, returns true when active
-func CheckBox(bounds rl.Rectangle, text string, checked bool) bool {
+func CheckBox(bounds rl.Rectangle, text string, checked *bool) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -789,13 +824,20 @@ func CheckBox(bounds rl.Rectangle, text string, checked bool) bool {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cchecked := C.bool(checked)
-	C.GuiCheckBox(cbounds, ctext, &cchecked)
-	return bool(cchecked)
+
+	if checked == nil {
+		checked = new(bool)
+	}
+	cchecked := C.bool(*checked)
+	defer func() {
+		*checked = bool(cchecked)
+	}()
+
+	return C.GuiCheckBox(cbounds, ctext, &cchecked) != 0
 }
 
 // ComboBox control, returns selected item index
-func ComboBox(bounds rl.Rectangle, text string, active int32) int32 {
+func ComboBox(bounds rl.Rectangle, text string, active *int32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -806,9 +848,17 @@ func ComboBox(bounds rl.Rectangle, text string, active int32) int32 {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cactive := C.int(active)
-	C.GuiComboBox(cbounds, ctext, &cactive)
-	return int32(cactive)
+
+	if active == nil {
+		active = new(int32)
+	}
+	cactive := C.int(*active)
+	defer func() {
+		*active = int32(cactive)
+	}()
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiComboBox(cbounds, ctext, &cactive) != 0
 }
 
 // DropdownBox control, returns true when clicked
@@ -889,6 +939,7 @@ func Spinner(bounds rl.Rectangle, text string, value *int32, minValue, maxValue 
 	cmaxValue := C.int(maxValue)
 	ceditMode := C.bool(editMode)
 
+	// NOTE: Returns the same as C.GuiValueBox
 	return C.GuiSpinner(cbounds, ctext, &cvalue, cminValue, cmaxValue, ceditMode) != 0
 }
 
@@ -954,11 +1005,13 @@ func ValueBoxFloat(bounds rl.Rectangle, text string, textValue *string, value *f
 		*value = float32(cvalue)
 	}()
 
-	return C.GuiValueBoxFloat(cbounds, ctext, ctextValue, &cvalue, C.bool(editMode)) != 0
+	ceditMode := C.bool(editMode)
+
+	return C.GuiValueBoxFloat(cbounds, ctext, ctextValue, &cvalue, ceditMode) != 0
 }
 
 // Slider control
-func Slider(bounds rl.Rectangle, textLeft, textRight string, value, minValue, maxValue float32) float32 {
+func Slider(bounds rl.Rectangle, textLeft, textRight string, value *float32, minValue, maxValue float32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -977,15 +1030,23 @@ func Slider(bounds rl.Rectangle, textLeft, textRight string, value, minValue, ma
 		defer C.free(unsafe.Pointer(ctextRight))
 	}
 
-	cvalue := C.float(value)
+	if value == nil {
+		value = new(float32)
+	}
+	cvalue := C.float(*value)
+	defer func() {
+		*value = float32(cvalue)
+	}()
+
 	cminValue := C.float(minValue)
 	cmaxValue := C.float(maxValue)
-	C.GuiSlider(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue)
-	return float32(cvalue)
+
+	// NOTE: 0 if value didn't change, 1 otherwise
+	return C.GuiSlider(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue) != 0
 }
 
 // SliderBar control, returns selected value
-func SliderBar(bounds rl.Rectangle, textLeft, textRight string, value, minValue, maxValue float32) float32 {
+func SliderBar(bounds rl.Rectangle, textLeft, textRight string, value *float32, minValue, maxValue float32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1004,15 +1065,23 @@ func SliderBar(bounds rl.Rectangle, textLeft, textRight string, value, minValue,
 		defer C.free(unsafe.Pointer(ctextRight))
 	}
 
-	cvalue := C.float(value)
+	if value == nil {
+		value = new(float32)
+	}
+	cvalue := C.float(*value)
+	defer func() {
+		*value = float32(cvalue)
+	}()
+
 	cminValue := C.float(minValue)
 	cmaxValue := C.float(maxValue)
-	C.GuiSliderBar(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue)
-	return float32(cvalue)
+
+	// NOTE: Returns the same as C.GuiSlider
+	return C.GuiSliderBar(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue) != 0
 }
 
 // ProgressBar control, shows current progress value
-func ProgressBar(bounds rl.Rectangle, textLeft, textRight string, value, minValue, maxValue float32) float32 {
+func ProgressBar(bounds rl.Rectangle, textLeft, textRight string, value *float32, minValue, maxValue float32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1031,15 +1100,23 @@ func ProgressBar(bounds rl.Rectangle, textLeft, textRight string, value, minValu
 		defer C.free(unsafe.Pointer(ctextRight))
 	}
 
-	cvalue := C.float(value)
+	if value == nil {
+		value = new(float32)
+	}
+	cvalue := C.float(*value)
+	defer func() {
+		*value = float32(cvalue)
+	}()
+
 	cminValue := C.float(minValue)
 	cmaxValue := C.float(maxValue)
-	C.GuiProgressBar(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue)
-	return float32(cvalue)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiProgressBar(cbounds, ctextLeft, ctextRight, &cvalue, cminValue, cmaxValue) != 0
 }
 
 // StatusBar control, shows info text
-func StatusBar(bounds rl.Rectangle, text string) {
+func StatusBar(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1050,11 +1127,13 @@ func StatusBar(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiStatusBar(cbounds, ctext)
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiStatusBar(cbounds, ctext) != 0
 }
 
 // DummyRectangle control, intended for placeholding
-func DummyRec(bounds rl.Rectangle, text string) {
+func DummyRec(bounds rl.Rectangle, text string) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1065,11 +1144,13 @@ func DummyRec(bounds rl.Rectangle, text string) {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	C.GuiDummyRec(cbounds, ctext)
+	
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiDummyRec(cbounds, ctext) != 0
 }
 
 // ListView control, returns selected list item index
-func ListView(bounds rl.Rectangle, text string, scrollIndex *int32, active int32) int32 {
+func ListView(bounds rl.Rectangle, text string, scrollIndex *int32, active *int32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1089,14 +1170,20 @@ func ListView(bounds rl.Rectangle, text string, scrollIndex *int32, active int32
 		*scrollIndex = int32(cscrollIndex)
 	}()
 
-	cactive := C.int(active)
+	if active == nil {
+		active = new(int32)
+	}
+	cactive := C.int(*active)
+	defer func() {
+		*active = int32(cactive)
+	}()
 
-	C.GuiListView(cbounds, ctext, &cscrollIndex, &cactive)
-	return int32(cactive)
+	// NOTE: Returns the same as C.GuiListViewEx (only 0 on raylib.h)
+	return C.GuiListView(cbounds, ctext, &cscrollIndex, &cactive) != 0
 }
 
 // ListView control with extended parameters
-func ListViewEx(bounds rl.Rectangle, text []string, focus, scrollIndex *int32, active int32) int32 {
+func ListViewEx(bounds rl.Rectangle, text []string, focus, scrollIndex *int32, active *int32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1124,14 +1211,20 @@ func ListViewEx(bounds rl.Rectangle, text []string, focus, scrollIndex *int32, a
 		*scrollIndex = int32(cscrollIndex)
 	}()
 
-	cactive := C.int(active)
+	if active == nil {
+		active = new(int32)
+	}
+	cactive := C.int(*active)
+	defer func() {
+		*active = int32(cactive)
+	}()
 
-	C.GuiListViewEx(cbounds, (**C.char)(ctext.Pointer), count, &cfocus, &cscrollIndex, &cactive)
-	return int32(cactive)
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiListViewEx(cbounds, (**C.char)(ctext.Pointer), count, &cfocus, &cscrollIndex, &cactive) != 0
 }
 
 // ColorPanel control, Color (RGBA) variant
-func ColorPanel(bounds rl.Rectangle, text string, color rl.Color) rl.Color {
+func ColorPanel(bounds rl.Rectangle, text string, color *rl.Color) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1147,17 +1240,20 @@ func ColorPanel(bounds rl.Rectangle, text string, color rl.Color) rl.Color {
 	ccolor.a = C.uchar(color.A)
 	ccolor.r = C.uchar(color.R)
 	ccolor.g = C.uchar(color.G)
-	C.GuiColorPanel(cbounds, ctext, &ccolor)
-	var goRes rl.Color
-	goRes.A = byte(ccolor.a)
-	goRes.R = byte(ccolor.r)
-	goRes.G = byte(ccolor.g)
-	goRes.B = byte(ccolor.b)
-	return goRes
+
+	// NOTE: This only returns 0 on raylib.h
+	res := C.GuiColorPanel(cbounds, ctext, &ccolor)
+
+	color.A = byte(ccolor.a)
+	color.R = byte(ccolor.r)
+	color.G = byte(ccolor.g)
+	color.B = byte(ccolor.b)
+
+	return res != 0
 }
 
 // ColorBarAlpha control, returns alpha value normalized [0..1]
-func ColorBarAlpha(bounds rl.Rectangle, text string, alpha float32) float32 {
+func ColorBarAlpha(bounds rl.Rectangle, text string, alpha *float32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1168,13 +1264,21 @@ func ColorBarAlpha(bounds rl.Rectangle, text string, alpha float32) float32 {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	calpha := C.float(alpha)
-	C.GuiColorBarAlpha(cbounds, ctext, &calpha)
-	return float32(calpha)
+
+	if alpha == nil {
+		alpha = new(float32)
+	}
+	calpha := C.float(*alpha)
+	defer func() {
+		*alpha = float32(calpha)
+	}()
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiColorBarAlpha(cbounds, ctext, &calpha) != 0
 }
 
 // ColorBarHue control, returns alpha value normalized [0..1]
-func ColorBarHue(bounds rl.Rectangle, text string, value float32) float32 {
+func ColorBarHue(bounds rl.Rectangle, text string, value *float32) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.x = C.float(bounds.X)
 	cbounds.y = C.float(bounds.Y)
@@ -1185,14 +1289,22 @@ func ColorBarHue(bounds rl.Rectangle, text string, value float32) float32 {
 		ctext = C.CString(text)
 		defer C.free(unsafe.Pointer(ctext))
 	}
-	cvalue := C.float(value)
-	C.GuiColorBarHue(cbounds, ctext, &cvalue)
-	return float32(cvalue)
+
+	if value == nil {
+		value = new(float32)
+	}
+	cvalue := C.float(*value)
+	defer func() {
+		*value = float32(cvalue)
+	}()
+
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiColorBarHue(cbounds, ctext, &cvalue) != 0
 }
 
 // ColorPicker control (multiple color controls)
 // NOTE: this picker converts RGB to HSV, which can cause the Hue control to jump. If you have this problem, consider using the HSV variant instead
-func ColorPicker(bounds rl.Rectangle, text string, color rl.Color) rl.Color {
+func ColorPicker(bounds rl.Rectangle, text string, color *rl.Color) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1208,17 +1320,20 @@ func ColorPicker(bounds rl.Rectangle, text string, color rl.Color) rl.Color {
 	ccolor.g = C.uchar(color.G)
 	ccolor.b = C.uchar(color.B)
 	ccolor.a = C.uchar(color.A)
-	C.GuiColorPicker(cbounds, ctext, &ccolor)
-	var goRes rl.Color
-	goRes.A = byte(ccolor.a)
-	goRes.R = byte(ccolor.r)
-	goRes.G = byte(ccolor.g)
-	goRes.B = byte(ccolor.b)
-	return goRes
+
+	// NOTE: This only returns 0 on raylib.h
+	res := C.GuiColorPicker(cbounds, ctext, &ccolor)
+
+	color.A = byte(ccolor.a)
+	color.R = byte(ccolor.r)
+	color.G = byte(ccolor.g)
+	color.B = byte(ccolor.b)
+
+	return res != 0
 }
 
 // ColorPicker control that avoids conversion to RGB on each call (multiple color controls)
-func ColorPickerHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) int32 {
+func ColorPickerHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1241,11 +1356,12 @@ func ColorPickerHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) int3
 		colorHSV.Z = float32(ccolorHSV.z)
 	}()
 
-	return int32(C.GuiColorPickerHSV(cbounds, ctext, &ccolorHSV))
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiColorPickerHSV(cbounds, ctext, &ccolorHSV) != 0
 }
 
 // ColorPanel control that returns HSV color value
-func ColorPanelHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) int32 {
+func ColorPanelHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.width = C.float(bounds.Width)
 	cbounds.height = C.float(bounds.Height)
@@ -1268,7 +1384,8 @@ func ColorPanelHSV(bounds rl.Rectangle, text string, colorHSV *rl.Vector3) int32
 		colorHSV.Z = float32(ccolorHSV.z)
 	}()
 
-	return int32(C.GuiColorPanelHSV(cbounds, ctext, &ccolorHSV))
+	// NOTE: This only returns 0 on raylib.h
+	return C.GuiColorPanelHSV(cbounds, ctext, &ccolorHSV) != 0
 }
 
 // MessageBox control
@@ -1290,6 +1407,7 @@ func MessageBox(bounds rl.Rectangle, title, message, buttons string) int32 {
 	}
 	cbuttons := C.CString(buttons)
 	defer C.free(unsafe.Pointer(cbuttons))
+
 	return int32(C.GuiMessageBox(cbounds, ctitle, cmessage, cbuttons))
 }
 
@@ -1340,7 +1458,7 @@ func TextInputBox(bounds rl.Rectangle, title, message, buttons string, text *str
 }
 
 // Grid control, returns mouse cell position
-func Grid(bounds rl.Rectangle, text string, spacing float32, subdivs int32, mouseCell *rl.Vector2) int32 {
+func Grid(bounds rl.Rectangle, text string, spacing float32, subdivs int32, mouseCell *rl.Vector2) bool {
 	var cbounds C.struct_Rectangle
 	cbounds.y = C.float(bounds.Y)
 	cbounds.width = C.float(bounds.Width)
@@ -1353,13 +1471,18 @@ func Grid(bounds rl.Rectangle, text string, spacing float32, subdivs int32, mous
 	}
 	cspacing := C.float(spacing)
 	csubdivs := C.int(subdivs)
+
 	var cmouseCell C.struct_Vector2
 	cmouseCell.x = C.float(mouseCell.X)
 	cmouseCell.y = C.float(mouseCell.Y)
+
+	// NOTE: This only returns 0 on raylib.h
 	res := C.GuiGrid(cbounds, ctext, cspacing, csubdivs, &cmouseCell)
+
 	mouseCell.X = float32(cmouseCell.x)
 	mouseCell.Y = float32(cmouseCell.y)
-	return int32(res)
+
+	return res != 0
 }
 
 //----------------------------------------------------------------------------------
@@ -1408,6 +1531,7 @@ func IconText(iconId IconID, text string) string {
 	return C.GoString(C.GuiIconText(ciconId, ctext))
 }
 
+// TODO change this so it returns []string
 // Load raygui icons file (.rgi)
 func LoadIcons(fileName string, loadIconsName bool) {
 	cfileName := C.CString(fileName)
@@ -1415,6 +1539,7 @@ func LoadIcons(fileName string, loadIconsName bool) {
 	C.GuiLoadIcons(cfileName, C.bool(loadIconsName))
 }
 
+// TODO change this so it returns []string
 // Load icons from memory (Binary files only)
 func LoadIconsFromMemory(data []byte, loadIconsName bool) {
 	C.GuiLoadIconsFromMemory((*C.uchar)(unsafe.Pointer(&data[0])), C.int(len(data)), C.bool(loadIconsName))
